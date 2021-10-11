@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
-import productsRouter from "./routes/products.js";
+// import userRoute from "./services/users/index.js";
+// import postRoute from "./services/posts/index.js";
+import experienceRoute from "./services/experiences/index.js";
 import {
   notFoundHandler,
   badRequestHandler,
@@ -15,6 +17,10 @@ const port = process.env.PORT || 5000;
 server.use(cors());
 
 server.use(express.json());
+
+// server.use("/users", userRoute);
+// server.use("/experiences", experienceRoute);
+// server.use("/posts", postRoute);
 
 /////////////////////////////////////////////////
 

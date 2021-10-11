@@ -1,13 +1,14 @@
+import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const postSchema = new Schema(
   {
-    text: { Type: String, requierd: true },
-    username: { Type: String, requierd: true },
+    text: { Type: String, required: true },
+    username: { Type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: "User" },
-    image: { Type: String, requierd: true },
+    image: { Type: String, required: true },
   },
-  { timestampts: true }
+  { timestamps: true }
 );
 
 export default model("post", postSchema);
