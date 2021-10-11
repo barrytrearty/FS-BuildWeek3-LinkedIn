@@ -7,7 +7,7 @@ import multer from "multer";
 import PdfPrinter from "pdfmake";
 import { pipeline } from "stream";
 
-// import json2csv from "json2";
+import json2csv from "json2csv";
 
 import userSchema from "./schema.js";
 
@@ -151,26 +151,6 @@ userRoute.post("/:id/experiences", async (req, res, next) => {
   }
 });
 
-userRoute.get("/:id/experiences/:expId", async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const user = await userSchema.findById(id);
-    if (user) {
-      const userExperience = user.experiences.find(
-        (experience) => experience._id.toString() === req.params.expId
-      );
-      if (userExperience) {
-        res.send(userExperience);
-      } else {
-        next(createHttpError(404, `Experience with id ${id} not found!`));
-      }
-      // res.send(user.reviews);
-    }
-  } catch (error) {
-    next(error);
-  }
-});
-
 userRoute.delete("/:id/experiences/:expId", async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -248,51 +228,102 @@ userRoute.post(
 
 /////////////////////////////////////////////////////////////
 
-// const generatePDFAsync = async (data) => {
-//   const asyncPipeline = promisify(pipeline); // promisify is an utility which transforms a function that uses callbacks into a function that uses Promises (and so Async/Await). Pipeline is a function that works with callbacks to connect two or more streams together --> I can promisify pipeline getting back an asynchronous pipeline
+const generatePDFAsync = (userObj) => {
+  // const asyncPipeline = promisify(pipeline);
 
-//   const fonts = {
-//     Roboto: {
-//       normal: "Helvetica",
-//       bold: "Helvetica-Bold",
-//       // italics: "fonts/Roboto-Italic.ttf",
-//       // bolditalics: "fonts/Roboto-MediumItalic.ttf",
-//     },
-//   };
+  const fonts = {
+    Roboto: {
+      normal: "Helvetica",
+      bold: "Helvetica-Bold",
+      // italics: "fonts/Roboto-Italic.ttf",
+      // bolditalics: "fonts/Roboto-MediumItalic.ttf",
+    },
+  };
 
-//   const printer = new PdfPrinter(fonts);
+  const printer = new PdfPrinter(fonts);
 
-//   const docDefinition = {
-//     content: [
-//       data.firstName,
-//       "Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines",
-//     ],
-//   };
+  const docDefinition = {
+    content: [
+      userObj.name,
+      userObj.surame,
+      userObj.bio,
+      userObj.email,
+      userObj.title,
+      "Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines",
+    ],
+  };
 
-//   const pdfReadableStream = printer.createPdfKitDocument(docDefinition, {});
-//   pdfReadableStream.end();
+  const pdfReadableStream = printer.createPdfKitDocument(docDefinition, {});
 
-//   const pdfPath = join(dirname(fileURLToPath(import.meta.url)), "example.pdf");
+  pdfReadableStream.end();
 
-//   await asyncPipeline(pdfReadableStream, fs.createWriteStream(pdfPath)); // when the stream ends, this will resolve the promise. If the stream has any error this is going to reject the promise
-
-//   return path;
-// };
+  return pdfReadableStream;
+};
 
 /////////////////////////////////////////////////////////////
+/// PDF CV Route
 
 userRoute.get("/:id/CV", async (req, res, next) => {
   try {
-    try {
-      const { id } = req.body;
-      const path = await generatePDFAsync({ firstName });
-      res.send(path);
-    } catch (error) {
-      next(error);
-    }
+    // const { id } = req.body;
+    const id = req.params.id;
+    const user = await userSchema.findById(id);
+    res.setHeader("Content-Disposition", `attachment; filename=example.pdf`);
+    const path = generatePDFAsync(user);
+
+    // res.send(path);
+    const destination = res;
+
+    pipeline(path, destination, (err) => {
+      if (err) next(err);
+    });
   } catch (error) {
     next(error);
   }
 });
 
+/////////////////////////////////////////
+// userRoute.get("/:id/experiences/CSV", async (req, res, next) => {
+//   try {
+//     const id = req.params.id;
+//     const user = await userSchema.findById(id);
+//     const experiences = user.experiences;
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=experiences.csv`
+//     ); // this header tells the browser to open the "save file as" dialog
+
+//     // const source = getBooksReadableStream();
+//     const transform = new json2csv.Transform({
+//       fields: ["role", "company"],
+//     });
+//     const destination = res;
+
+//     pipeline(experiences, transform, destination, (err) => {
+//       if (err) next(err);
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
+userRoute.get("/:id/experiences/:expId", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const user = await userSchema.findById(id);
+    if (user) {
+      const userExperience = user.experiences.find(
+        (experience) => experience._id.toString() === req.params.expId
+      );
+      if (userExperience) {
+        res.send(userExperience);
+      } else {
+        next(createHttpError(404, `Experience with id ${id} not found!`));
+      }
+      // res.send(user.reviews);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 export default userRoute;
