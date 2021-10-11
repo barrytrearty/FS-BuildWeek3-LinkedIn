@@ -22,7 +22,7 @@ cloudinary.config({
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "amazon-products",
+    folder: "linked-products",
   },
 });
 
@@ -151,12 +151,38 @@ userRoute.post("/:id/experiences", async (req, res, next) => {
   }
 });
 
-userRoute.get("/:id/experiences/expId", async (req, res, next) => {
+userRoute.get("/:id/experiences/:expId", async (req, res, next) => {
   try {
     const id = req.params.id;
-    const user = await userModel.findById(id);
+    const user = await userSchema.findById(id);
     if (user) {
-      res.send(user.reviews);
+      const userExperience = user.experiences.find(
+        (experience) => experience._id.toString() === req.params.expId
+      );
+      if (userExperience) {
+        res.send(userExperience);
+      } else {
+        next(createHttpError(404, `Experience with id ${id} not found!`));
+      }
+      // res.send(user.reviews);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRoute.delete("/:id/experiences/:expId", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const user = await userSchema.findByIdAndUpdate(
+      id,
+      {
+        $pull: { experiences: { _id: req.params.expId } },
+      },
+      { new: true }
+    );
+    if (user) {
+      res.status(204).send(user);
     } else {
       next(createHttpError(404, `User with id ${id} not found!`));
     }
@@ -165,42 +191,60 @@ userRoute.get("/:id/experiences/expId", async (req, res, next) => {
   }
 });
 
-userRoute.delete("/:id/experiences/expId", async (req, res, next) => {
+userRoute.put("/:id/experiences/:expId", async (req, res, next) => {
   try {
-    const id = req.params.id;
+    const user = await userSchema.findById(req.params.id);
 
-    const deletedExperience = await experienceSchema.findByIdAndDelete(id);
-
-    if (deletedExperience) {
-      res.status(204).send();
-    } else {
-      next(createHttpError(404, `Experience with id ${id} not found!`));
-    }
-  } catch (error) {
-    next(error);
-  }
-});
-
-userRoute.put("/:id/experiences/expId", async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const modifiedExperience = await experienceSchema.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,
+    if (user) {
+      const index = user.experiences.findIndex(
+        (experience) => experience._id.toString() === req.params.expId
+      );
+      console.log(index);
+      if (index !== -1) {
+        user.experiences[index] = {
+          ...user.experiences[index].toObject(),
+          ...req.body,
+        };
+        await user.save();
+        res.send(user);
+      } else {
+        next(createHttpError(404, `Blog Post with id ${id} not found!`));
       }
-    );
-
-    if (modifiedExperience) {
-      res.send(modifiedExperience);
-    } else {
-      next(createHttpError(404));
     }
   } catch (error) {
     next(error);
   }
 });
+
+userRoute.post(
+  "/:id/experiences/:expId/picture",
+  multer({ storage: cloudinaryStorage }).single("exp-picture"),
+  async (req, res, next) => {
+    try {
+      const user = await userSchema.findById(req.params.id);
+
+      if (user) {
+        const index = user.experiences.findIndex(
+          (experience) => experience._id.toString() === req.params.expId
+        );
+        console.log(index);
+        if (index !== -1) {
+          user.experiences[index] = {
+            ...user.experiences[index].toObject(),
+            image: req.file.path,
+          };
+          await user.save();
+          res.send(user);
+        } else {
+          next(createHttpError(404, `Blog Post with id ${id} not found!`));
+        }
+      }
+      // res.send(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 /////////////////////////////////////////////////////////////
 
