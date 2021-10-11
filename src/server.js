@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
 import userRoute from "./services/users/index.js";
 import postRoute from "./services/posts/index.js";
-import experienceRoute from "./services/experiences/index.js";
+// import experienceRoute from "./services/experiences/index.js";
 import {
   notFoundHandler,
   badRequestHandler,
@@ -19,7 +19,7 @@ server.use(cors());
 server.use(express.json());
 
 server.use("/users", userRoute);
-server.use("/experiences", experienceRoute);
+// server.use("/experiences", experienceRoute);
 server.use("/posts", postRoute);
 
 /////////////////////////////////////////////////
