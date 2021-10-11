@@ -1,0 +1,38 @@
+{
+  "name": "FS-BuildWeek3-LinkedIn",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "cloudinary": "^1.27.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-list-endpoints": "^6.0.0",
+    "http-errors": "^1.8.0",
+    "json2csv": "^5.0.6",
+    "mongoose": "^6.0.10",
+    "multer": "^1.4.3",
+    "multer-storage-cloudinary": "^4.0.0",
+    "pdfmake": "^0.2.2",
+    "query-to-mongo": "^0.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon -r dotenv/config src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/barrytrearty/FS-BuildWeek3-LinkedIn.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/barrytrearty/FS-BuildWeek3-LinkedIn/issues"
+  },
+  "homepage": "https://github.com/barrytrearty/FS-BuildWeek3-LinkedIn#readme"
+}
