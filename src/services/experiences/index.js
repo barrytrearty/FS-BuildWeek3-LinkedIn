@@ -7,6 +7,8 @@ const experienceRoute = express.Router();
 
 experienceRoute.get("/", async (req, res, next) => {
   try {
+    const experiences = await experienceSchema.find();
+    res.send(experiences);
   } catch (error) {
     next(error);
   }
@@ -14,6 +16,9 @@ experienceRoute.get("/", async (req, res, next) => {
 
 experienceRoute.post("/", async (req, res, next) => {
   try {
+    const newExperience = new experienceSchema(req.body);
+    const { _id } = await newExperience.save();
+    res.status(201).send(newExperience);
   } catch (error) {
     next(error);
   }

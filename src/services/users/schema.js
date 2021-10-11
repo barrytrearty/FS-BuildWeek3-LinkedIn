@@ -4,14 +4,14 @@ const { Schema, model } = mongoose;
 
 const userSchema = new Schema(
   {
-    name: { Type: String, required: true },
-    surname: { Type: String, required: true },
-    email: { Type: String, required: true },
-    bio: { Type: String, required: true },
-    title: { Type: String, required: true },
-    area: { Type: String, required: true },
-    image: { Type: String, required: true },
-    username: { Type: String, required: true },
+    name: { type: String, required: true },
+    surname: { type: String, required: true },
+    email: { type: String, required: true },
+    bio: { type: String, required: true },
+    title: { type: String, required: true },
+    area: { type: String, required: true },
+    image: { type: String, required: true },
+    username: { type: String, required: true },
   },
   { timestamps: true }
 );

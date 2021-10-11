@@ -7,19 +7,21 @@ const postRoute = express.Router();
 
 postRoute.get("/", async (req, res, next) => {
   try {
-    const posts = await postSchema.findAll();
+    const posts = await postSchema.find();
     res.send(posts);
   } catch (error) {
     next(error);
   }
 });
 
-// postRoute.post("/", async (req, res, next) => {
-//   try {
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+postRoute.post("/", async (req, res, next) => {
+  try {
+    const newPost = new postSchema(req.body);
+    res.status(201).send(newPost);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // postRoute.get("/:id", async (req, res, next) => {
 //   try {
