@@ -7,7 +7,7 @@ import multer from "multer";
 import PdfPrinter from "pdfmake";
 import { pipeline } from "stream";
 
-import json2csv from "json2csv";
+import { Parser } from "json2csv";
 
 import userSchema from "./schema.js";
 
@@ -283,29 +283,38 @@ userRoute.get("/:id/CV", async (req, res, next) => {
 });
 
 /////////////////////////////////////////
-// userRoute.get("/:id/experiences/CSV", async (req, res, next) => {
-//   try {
-//     const id = req.params.id;
-//     const user = await userSchema.findById(id);
-//     const experiences = user.experiences;
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename=experiences.csv`
-//     ); // this header tells the browser to open the "save file as" dialog
+userRoute.get("/:id/experiences/CSV", async (req, res, next) => {
+  try {
+    const source = await userSchema.findById(req.params.id);
+    console.log(source);
+    if (source) {
+      const jsonData = JSON.parse(JSON.stringify(source.experiences));
+      const fields = [
+        "_id",
+        "role",
+        "company",
+        "description",
+        "area",
+        "username",
+        "startDate",
+        "endDate",
+      ];
+      const options = { fields };
+      const json2csvParser = new Parser(options);
+      // const Json2csvParser = json2csv.Parser;
 
-//     // const source = getBooksReadableStream();
-//     const transform = new json2csv.Transform({
-//       fields: ["role", "company"],
-//     });
-//     const destination = res;
-
-//     pipeline(experiences, transform, destination, (err) => {
-//       if (err) next(err);
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+      const csvData = json2csvParser.parse(jsonData);
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename = experiences.csv"
+      );
+      res.set("Content-Type", "text/csv");
+      res.status(200).end(csvData);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 userRoute.get("/:id/experiences/:expId", async (req, res, next) => {
   try {

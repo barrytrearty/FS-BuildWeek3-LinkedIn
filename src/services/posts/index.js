@@ -109,4 +109,113 @@ postRoute.post(
   }
 );
 
+//////////////////////////////////////////////////
+/////////////////////EXTRA
+
+postRoute.post("/:id/like", async (req, res, next) => {
+  const id = req.params.id;
+  const modifiedPost = await postSchema.findByIdAndUpdate(
+    id,
+    { $push: { likes: req.body } },
+    {
+      new: true,
+    }
+  );
+  if (modifiedPost) {
+    res.send(modifiedPost);
+  } else {
+    next(createHttpError(404));
+  }
+});
+
+postRoute.delete("/:id/like", async (req, res, next) => {
+  const id = req.params.id;
+  const modifiedPost = await postSchema.findByIdAndUpdate(
+    id,
+    {
+      $pull: { likes: req.body },
+    },
+    { new: true }
+  );
+  if (modifiedPost) {
+    res.status(204).send(modifiedPost);
+  } else {
+    next(createHttpError(404, `Post with id ${id} not found!`));
+  }
+});
+
+postRoute.get("/:id/comment", async (req, res, next) => {
+  const id = req.params.id;
+  const post = await postSchema.findById(id);
+  if (post) {
+    res.send(post.comments);
+  } else {
+    next(createHttpError(404, `Post with id ${id} not found!`));
+  }
+});
+
+postRoute.post("/:id/comment", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const updatedPost = await postSchema.findById(req.params.id);
+    if (updatedPost) {
+      const updatedPost = await postSchema.findByIdAndUpdate(
+        req.params.id,
+        { $push: { comments: req.body } },
+        { new: true }
+      );
+      res.send(updatedPost);
+    } else {
+      next(createHttpError(404, `Post with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+postRoute.delete("/:id/comment/:comId", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const post = await postSchema.findByIdAndUpdate(
+      id,
+      {
+        $pull: { comments: { _id: req.params.comId } },
+      },
+      { new: true }
+    );
+    if (post) {
+      res.status(204).send(post);
+    } else {
+      next(createHttpError(404, `Post with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+postRoute.put("/:id/comment/:comId", async (req, res, next) => {
+  try {
+    const post = await postSchema.findById(req.params.id);
+
+    if (post) {
+      const index = post.comments.findIndex(
+        (comment) => comment._id.toString() === req.params.comId
+      );
+      console.log(index);
+      if (index !== -1) {
+        post.comments[index] = {
+          ...post.comments[index].toObject(),
+          ...req.body,
+        };
+        await post.save();
+        res.status(200).send(post);
+      } else {
+        next(createHttpError(404, `Post with id ${id} not found!`));
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default postRoute;
