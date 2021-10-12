@@ -13,6 +13,14 @@ const experienceSchema = new Schema(
     area: { type: String, required: true },
     username: { type: String, required: true },
     image: { type: String, required: true },
+    // role: { type: String },
+    // company: { type: String },
+    // startDate: { type: String },
+    // endDate: { type: String },
+    // description: { type: String },
+    // area: { type: String },
+    // username: { type: String },
+    // image: { type: String },
   },
   { timestamps: true }
 );

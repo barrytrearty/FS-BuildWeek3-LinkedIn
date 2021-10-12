@@ -207,6 +207,7 @@ userRoute.post(
         const index = user.experiences.findIndex(
           (experience) => experience._id.toString() === req.params.expId
         );
+        console.log(req.file.path);
         console.log(index);
         if (index !== -1) {
           user.experiences[index] = {
