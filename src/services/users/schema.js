@@ -36,6 +36,7 @@ const userSchema = new Schema(
     image: { type: String, required: true },
     username: { type: String, required: true },
     experiences: { default: [], type: [experienceSchema] },
+    connections: [{ default: [], type: Schema.Types.ObjectId, ref: "user" }],
   },
   { timestamps: true }
 );

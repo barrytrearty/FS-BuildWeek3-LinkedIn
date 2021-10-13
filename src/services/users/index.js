@@ -336,4 +336,68 @@ userRoute.get("/:id/experiences/:expId", async (req, res, next) => {
     next(error);
   }
 });
+
+/////////////////////////////////////////////////
+///////// EXTRA EXTRA FEATURE
+
+// req.body = {id: user2id}
+
+userRoute.post("/:id/connection", async (req, res, next) => {
+  try {
+    const id1 = req.params.id;
+    const connection1 = await userSchema.findByIdAndUpdate(
+      id1,
+      { $push: { connections: req.body } },
+      {
+        new: true,
+      }
+    );
+    if (connection1) {
+      const id2 = req.body._id;
+      const connection2 = await userSchema.findByIdAndUpdate(
+        id2,
+        { $push: { connections: id1 } },
+        {
+          new: true,
+        }
+      );
+      res.send(connection2);
+    } else {
+      next(createHttpError(404));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRoute.delete("/:id/connection", async (req, res, next) => {
+  try {
+    const id1 = req.params.id;
+    console.log(id1);
+    const connection1 = await userSchema.findByIdAndUpdate(
+      id1,
+      {
+        $pull: { connections: req.body._id },
+      },
+      { new: true }
+    );
+    // if (connection1) {
+    const id2 = req.body._id;
+    console.log(id2);
+    const connection2 = await userSchema.findByIdAndUpdate(
+      id2,
+      { $pull: { connections: id1 } },
+      {
+        new: true,
+      }
+    );
+    res.status(204).send(connection1);
+    // } else {
+    //   next(createHttpError(404, `Post with id ${id} not found!`));
+    // }
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default userRoute;

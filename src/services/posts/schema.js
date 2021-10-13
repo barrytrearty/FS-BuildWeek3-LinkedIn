@@ -23,7 +23,7 @@ const postSchema = new Schema(
     text: { type: String, required: true },
     username: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: "user" },
-    image: { type: String, required: true },
+    image: { type: String },
     comments: { default: [], type: [commentSchema] },
     likes: { default: [], type: [likeSchema] },
   },
