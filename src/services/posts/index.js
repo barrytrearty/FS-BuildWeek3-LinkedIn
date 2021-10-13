@@ -4,6 +4,8 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 
+import mongoose from "mongoose";
+
 import postSchema from "./schema.js";
 
 const { CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET } = process.env;
@@ -112,19 +114,63 @@ postRoute.post(
 //////////////////////////////////////////////////
 /////////////////////EXTRA
 
+// postRoute.post("/:id/like", async (req, res, next) => {
+//   const id = req.params.id;
+//   console.log(id);
+//   const post = await postSchema.findById(id);
+//   // console.log(post.likes[0].user.toString());
+//   if (post.likes.some((like) => like.user.toString() === req.body.user)) {
+//     console.log("Already contains userId");
+//     res.send("Already liked");
+//   } else {
+//     const modifiedPost = await postSchema.findByIdAndUpdate(
+//       id,
+//       {
+//         $push: { likes: req.body },
+//       },
+//       {
+//         new: true,
+//       }
+//     );
+//     if (modifiedPost) {
+//       res.send(modifiedPost);
+//     } else {
+//       next(createHttpError(404));
+//     }
+//   }
+// });
+
 postRoute.post("/:id/like", async (req, res, next) => {
   const id = req.params.id;
-  const modifiedPost = await postSchema.findByIdAndUpdate(
-    id,
-    { $push: { likes: req.body } },
-    {
-      new: true,
-    }
-  );
-  if (modifiedPost) {
-    res.send(modifiedPost);
+  console.log(id);
+
+  const criteria = {
+    _id: id,
+    "likes.user": new mongoose.Types.ObjectId(req.body.user),
+  };
+  const isLiked = await postSchema.findOne(criteria);
+  // console.log(post.likes[0].user.toString());
+  if (isLiked) {
+    await postSchema.findByIdAndUpdate(id, {
+      $pull: {
+        likes: {
+          user: new mongoose.Types.ObjectId(req.body.user),
+        },
+      },
+    });
+
+    res.send("like removed");
   } else {
-    next(createHttpError(404));
+    const modifiedPost = await postSchema.findByIdAndUpdate(
+      id,
+      {
+        $push: { likes: req.body },
+      },
+      {
+        new: true,
+      }
+    );
+    res.send("like added");
   }
 });
 
