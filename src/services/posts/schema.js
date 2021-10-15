@@ -1,18 +1,19 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-export const commentSchema = new Schema(
+const likeSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "user" },
-    comment: { type: String, required: true },
     // post: { type: Schema.Types.ObjectId, ref: "post" },
   },
   { timestamps: true }
 );
 
-const likeSchema = new Schema(
+export const commentSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "user" },
+    comment: { type: String, required: true },
+    likes: { default: [], type: [likeSchema] },
     // post: { type: Schema.Types.ObjectId, ref: "post" },
   },
   { timestamps: true }

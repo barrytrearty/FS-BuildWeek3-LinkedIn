@@ -210,6 +210,35 @@ postRoute.get("/:id/comment", async (req, res, next) => {
   }
 });
 
+postRoute.get("/:id/comment/:comId", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const post = await postSchema.findById(id).populate({
+      path: "comments",
+      populate: {
+        path: "user",
+        select: "name surname image",
+      },
+    });
+    if (post) {
+      const comment = post.comments.find(
+        (comment) => comment._id.toString() === req.params.comId
+      );
+      console.log(comment);
+      if (comment) {
+        res.send(comment);
+      } else {
+        next(createHttpError(404, `Experience with id ${id} not found!`));
+      }
+      // await commentSchema.populate("user");
+    } else {
+      next(createHttpError(404, `Post with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 postRoute.post("/:id/comment", async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -221,6 +250,25 @@ postRoute.post("/:id/comment", async (req, res, next) => {
         { new: true }
       );
       res.send(updatedPost);
+    } else {
+      next(createHttpError(404, `Post with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+postRoute.put("/:id/comment/deleteall", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const post = await postSchema.findByIdAndUpdate(
+      id,
+      { comments: [] },
+
+      { new: true }
+    );
+    if (post) {
+      res.status(204).send(post);
     } else {
       next(createHttpError(404, `Post with id ${id} not found!`));
     }
@@ -273,5 +321,63 @@ postRoute.put("/:id/comment/:comId", async (req, res, next) => {
     next(error);
   }
 });
+
+/////////////////////////////////////////// COMMENT LIKE
+// postRoute.post("/:id/comment/:comId/like", async (req, res, next) => {
+//   const id = req.params.id;
+//   const post = await postSchema.findById(id).populate({
+//     path: "comments",
+//     populate: {
+//       path: "user",
+//       select: "name surname image",
+//     },
+//   });
+//   if (post) {
+//     const comment = post.comments.find(
+//       (comment) => comment._id.toString() === req.params.comId
+//     );
+//     console.log(comment);
+//     if (comment) {
+//       const criteria = {
+//         _id: req.params.comId,
+//         "likes.user": new mongoose.Types.ObjectId(req.body.user),
+//       };
+//       const isLiked = await postSchema.findOne(criteria);
+//       // console.log(post.likes[0].user.toString());
+//       if (isLiked) {
+// await postSchema.findById(id)
+// post.comments.likes.pull
+// (comment) => comment._id.toString() === req.params.comId
+
+//         await postSchema.findByIdAndUpdate(id, {
+//           $pull: {
+//             likes: {
+//               user: new mongoose.Types.ObjectId(req.body.user),
+//             },
+//           },
+//         });
+
+//         res.send("like removed");
+//       } else {
+//         const modifiedPost = await postSchema.findByIdAndUpdate(
+//           id,
+//           {
+//             $push: { likes: req.body },
+//           },
+//           {
+//             new: true,
+//           }
+//         );
+//         res.send("like added");
+//       }
+//     } else {
+//       next(createHttpError(404, `Comment with id ${id} not found!`));
+//     }
+
+//     // await commentSchema.populate("user");
+//   } else {
+//     next(createHttpError(404, `Post with id ${req.params.comId} not found!`));
+//   }
+// });
 
 export default postRoute;
