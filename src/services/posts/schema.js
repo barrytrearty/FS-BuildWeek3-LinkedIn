@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const commentSchema = new Schema(
+export const commentSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "user" },
     comment: { type: String, required: true },

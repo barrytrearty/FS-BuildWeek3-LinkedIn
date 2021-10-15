@@ -6,6 +6,7 @@ import multer from "multer";
 
 import mongoose from "mongoose";
 
+import { commentSchema } from "./schema.js";
 import postSchema from "./schema.js";
 
 const { CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET } = process.env;
@@ -174,27 +175,36 @@ postRoute.post("/:id/like", async (req, res, next) => {
   }
 });
 
-postRoute.delete("/:id/like", async (req, res, next) => {
-  const id = req.params.id;
-  const modifiedPost = await postSchema.findByIdAndUpdate(
-    id,
-    {
-      $pull: { likes: req.body },
-    },
-    { new: true }
-  );
-  if (modifiedPost) {
-    res.status(204).send(modifiedPost);
-  } else {
-    next(createHttpError(404, `Post with id ${id} not found!`));
-  }
-});
+// postRoute.delete("/:id/like", async (req, res, next) => {
+//   const id = req.params.id;
+//   const modifiedPost = await postSchema.findByIdAndUpdate(
+//     id,
+//     {
+//       $pull: { likes: req.body },
+//     },
+//     { new: true }
+//   );
+//   if (modifiedPost) {
+//     res.status(204).send(modifiedPost);
+//   } else {
+//     next(createHttpError(404, `Post with id ${id} not found!`));
+//   }
+// });
 
 postRoute.get("/:id/comment", async (req, res, next) => {
   const id = req.params.id;
-  const post = await postSchema.findById(id);
-  if (post) {
-    res.send(post.comments);
+  const post = await postSchema.findById(id).populate({
+    path: "comments",
+    populate: {
+      path: "user",
+      select: "name surname image",
+    },
+  });
+  const postComments = post.comments;
+  console.log(postComments);
+  // await commentSchema.populate("user");
+  if (postComments) {
+    res.send(postComments);
   } else {
     next(createHttpError(404, `Post with id ${id} not found!`));
   }
